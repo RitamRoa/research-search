@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Research Search</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; background: #f8f9fb; color: #222; }
+        h1 { margin-bottom: 1rem; }
+        form { display: grid; gap: 0.75rem; max-width: 480px; padding: 1.5rem; background: #fff; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+        label { font-weight: 600; }
+        input[type="text"], input[type="number"] { padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; }
+        button { padding: 0.6rem 1rem; background: #2563eb; color: #fff; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer; }
+        button:hover { background: #1e4fc7; }
+        table { width: 100%; border-collapse: collapse; margin-top: 2rem; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+        th, td { padding: 0.75rem; border-bottom: 1px solid #e5e7eb; text-align: left; vertical-align: top; }
+        th { background: #f3f4f6; font-weight: 700; }
+        .flash { background: #fee2e2; color: #991b1b; padding: 0.75rem 1rem; border-radius: 6px; margin: 1rem 0; }
+        .actions { margin-top: 1rem; }
+        .actions a { color: #2563eb; text-decoration: none; font-weight: 600; }
+        .actions a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <h1>Search Recent Research</h1>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="flash">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="post" action="{{ url_for('index') }}">
+        <div>
+            <label for="keyword">Research topic keyword</label>
+            <input type="text" id="keyword" name="keyword" value="{{ keyword }}" placeholder="e.g. climate change" required>
+        </div>
+        <div>
+            <label for="rows">Number of results (1-100)</label>
+            <input type="number" id="rows" name="rows" min="1" max="100" value="{{ rows }}">
+        </div>
+        <button type="submit">Search Crossref</button>
+    </form>
+
+    {% if results is not none and not results.empty %}
+        <div class="actions">
+            <a href="{{ url_for('download_csv') }}">Download CSV</a>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>DOI</th>
+                    <th>Year</th>
+                    <th>Authors</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for _, row in results.iterrows() %}
+                    <tr>
+                        <td>{{ row['Title'] }}</td>
+                        <td><a href="https://doi.org/{{ row['DOI'] }}" target="_blank" rel="noopener">{{ row['DOI'] }}</a></td>
+                        <td>{{ row['Year'] }}</td>
+                        <td>{{ row['Authors'] }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% elif results is not none %}
+        <p>No results to display.</p>
+    {% endif %}
+</body>
+</html>
